@@ -1,5 +1,6 @@
 package br.ufms.mechsmasher;
 
+import br.ufms.mechsmasher.physics.WorldController;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -19,74 +20,54 @@ public class MechSmasher extends ApplicationAdapter {
     private Box2DDebugRenderer debugRenderer;
     private long lastTime;
     private Camera camera;
-    private Body[] walls;
+    private Walls walls;
     private Fixture[] wallsFixture;
 
-    private PhysicsLifecycleManager physicsLifecycleManager;
+    private WorldController worldController;
 
     public MechSmasher() {
         players = new Player[2];
         playerControllers = new PlayerController[2];
     }
 
-    private void buildWalls(float width, float height) {
-        walls = new Body[4];
-        wallsFixture = new Fixture[4];
-
-        BodyDef wallsDef = new BodyDef();
-        wallsDef.type = BodyDef.BodyType.StaticBody;
-        wallsDef.position.set(0.0f, height / 2.0f);
-        walls[0] = world.createBody(wallsDef);
-
-        wallsDef.position.set(width, height / 2.0f);
-        walls[1] = world.createBody(wallsDef);
-
-        wallsDef.position.set(width / 2.0f, 0.0f);
-        walls[2] = world.createBody(wallsDef);
-
-        wallsDef.position.set(width / 2.0f, height);
-        walls[3] = world.createBody(wallsDef);
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(2.0f, height);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.restitution = 0.0f;
-        fixtureDef.friction = 0.0f;
-        fixtureDef.shape = shape;
-
-        wallsFixture[0] = walls[0].createFixture(fixtureDef);
-        wallsFixture[1] = walls[1].createFixture(fixtureDef);
-
-        shape.setAsBox(width, 2.0f);
-        wallsFixture[2] = walls[2].createFixture(fixtureDef);
-        wallsFixture[3] = walls[3].createFixture(fixtureDef);
-        shape.dispose();
-
-        for (Body body : walls) {
-            body.setUserData("Wall");
-        }
-    }
-
     @Override
     public void create() {
+        // Set up camera
         final float w = Gdx.graphics.getWidth();
         final float h = Gdx.graphics.getHeight();
+        final float viewportWidth = 1024;
+        final float viewportHeight = viewportWidth * (h / w);
 
-        batch = new SpriteBatch();
-
-        lastTime = System.currentTimeMillis();
-        world = new World(new Vector2(0.0f, 0.0f), true);
-        ProjectileManager.initManager(world);
-        debugRenderer = new Box2DDebugRenderer();
-        camera = new OrthographicCamera(500, 500 * (h / w));
+        camera = new OrthographicCamera(viewportWidth, viewportHeight);
         camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
         camera.update();
 
-        players[0] = new Player(world, 40.0f, 20.0f);
+        // Initialize Sprite Batch
+        batch = new SpriteBatch();
 
-        players[1] = new Player(world, 200.0f, 230.0f);
+        // Set up Phyics engine
+        lastTime = System.currentTimeMillis();
 
+        world = new World(new Vector2(0.0f, 0.0f), true);
+        debugRenderer = new Box2DDebugRenderer();
+        debugRenderer.setDrawBodies(true);
+        worldController = new WorldController(world);
+
+        walls = new Walls(viewportWidth, viewportHeight);
+        worldController.register(walls);
+
+        world.setContactListener(new GlobalContactListener());
+
+        // Create players
+        for (int i = 0; i < 2; i++) {
+            players[i] = new Player("Player " + (i + 1), null);
+            worldController.register(players[i]);
+        }
+
+        players[0].getBody().setTransform(30, 30, 0);
+        players[1].getBody().setTransform(viewportWidth - 30, viewportHeight - 30, (float) Math.PI);
+
+        // Set up controllers
         KeyboardListener listener = new KeyboardListener();
         playerControllers[0] = new PlayerController(
                 Input.Keys.W,
@@ -105,13 +86,8 @@ public class MechSmasher extends ApplicationAdapter {
                 players[1]
         );
         listener.getControllers().addAll(Arrays.asList(playerControllers));
+
         Gdx.input.setInputProcessor(listener);
-        buildWalls(camera.viewportWidth, camera.viewportHeight);
-
-        physicsLifecycleManager = new PhysicsLifecycleManager();
-
-        world.setContactListener(new GlobalContactListener(physicsLifecycleManager, walls));
-        debugRenderer.setDrawBodies(true);
     }
 
     @Override
@@ -127,8 +103,8 @@ public class MechSmasher extends ApplicationAdapter {
             world.step(1000 / 45, 6, 2);
             lastTime += 1000 / 45;
 
-            physicsLifecycleManager.update();
-            Arrays.stream(playerControllers).forEach(c -> c.act());
+            Arrays.stream(playerControllers).forEach(PlayerController::act);
+            worldController.update();
         }
 
         debugRenderer.render(world, camera.combined);

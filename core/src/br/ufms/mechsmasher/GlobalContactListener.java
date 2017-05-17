@@ -1,16 +1,9 @@
 package br.ufms.mechsmasher;
 
+import br.ufms.mechsmasher.physics.PhysicalObject;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class GlobalContactListener implements ContactListener {
-    private Body[] walls;
-    private PhysicsLifecycleManager lifecycleManager;
-
-    public GlobalContactListener(PhysicsLifecycleManager lifecycleManager, Body[] walls) {
-        this.walls = walls;
-        this.lifecycleManager = lifecycleManager;
-    }
-
     @Override
     public void beginContact(Contact contact) {
         PhysicalObject objectA;
@@ -24,8 +17,8 @@ public class GlobalContactListener implements ContactListener {
         objectA = (PhysicalObject) contact.getFixtureA().getBody().getUserData();
         objectB = (PhysicalObject) contact.getFixtureB().getBody().getUserData();
 
-        objectA.onContact(objectB);
-        objectB.onContact(objectA);
+        objectA.contact(objectB);
+        objectB.contact(objectA);
     }
 
     @Override

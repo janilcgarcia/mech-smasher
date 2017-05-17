@@ -1,30 +1,36 @@
 package br.ufms.mechsmasher;
 
+import br.ufms.mechsmasher.physics.WorldController;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class ProjectileManager {
     private World world;
+    private WorldController worldController;
+    private long lastShot;
 
-    private static ProjectileManager instance = null;
-
-    private ProjectileManager(World world) {
-        this.world = world;
+    public ProjectileManager() {
+        this.worldController = null;
+        this.lastShot = 0L;
     }
 
     public Projectile fire(Vector2 from, Vector2 dir) {
-        return new Projectile(world, from, dir);
-    }
-
-    public static void initManager(World world) {
-        instance = new ProjectileManager(world);
-    }
-
-    public static ProjectileManager getInstance() {
-        if (instance == null) {
-            throw new RuntimeException("Instance not initialized yet");
+        final long now = System.currentTimeMillis();
+        if (now - lastShot < 100) {
+            return null;
         }
 
-        return instance;
+        lastShot = now;
+        Projectile projectile = new Projectile(this);
+        worldController.register(projectile);
+
+        projectile.getBody().setTransform(from.x, from.y, dir.angleRad() - 0.5f * (float) Math.PI);
+        projectile.getBody().setLinearVelocity(dir);
+
+        return projectile;
+    }
+
+    public void setWorldController(WorldController worldController) {
+        this.worldController = worldController;
     }
 }
