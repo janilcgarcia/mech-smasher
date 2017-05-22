@@ -16,9 +16,12 @@ public class Projectile extends PhysicalObject {
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.linearDamping = 0.0f;
+        bodyDef.angularDamping = 0.0f;
+        bodyDef.bullet = true;
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(0.8f, 2.4f);
+        shape.setAsBox(0.03f, 0.1f);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -37,5 +40,10 @@ public class Projectile extends PhysicalObject {
     @Override
     public void contact(PhysicalObject object) {
         getWorldController().deactivate(this, true);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 }

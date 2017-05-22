@@ -3,7 +3,9 @@ package br.ufms.mechsmasher;
 import br.ufms.mechsmasher.physics.PhysicalObject;
 import br.ufms.mechsmasher.physics.WorldController;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
@@ -14,22 +16,24 @@ public class Player extends PhysicalObject {
     private Vector2 direction;
 
     private Animation<TextureRegion> animation;
-
-    private final static int LEFT = 0;
-    private final static int DOWN = 1;
-    private final static int RIGHT = 2;
-    private final static int UP = 3;
-
+    long animationTime;
     private int hp;
 
+    private static final float LINEAR_SPEED = 0.3f;
+    private static final float ANGULAR_SPPED = 0.2f;
+
+    private boolean moving;
+
     public Player(String name, Animation<TextureRegion> animation) {
-        //projectiles = ProjectileManager.getInstance();
         direction = new Vector2();
         projectiles = new ProjectileManager();
         this.name = name;
 
         this.hp = 650;
         this.animation = animation;
+        animationTime = 0;
+
+        moving = false;
     }
 
     @Override
@@ -47,7 +51,7 @@ public class Player extends PhysicalObject {
         body = getWorld().createBody(bodyDef);
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(12, 12);
+        shape.setAsBox(0.6f, 1.2f);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1f;
@@ -69,7 +73,7 @@ public class Player extends PhysicalObject {
     private void applyMovement(float dir) {
         calcDirection();
 
-        direction.scl(800.f * dir);
+        direction.scl(LINEAR_SPEED * dir);
         getBody().applyLinearImpulse(direction, getBody().getWorldCenter(), true);
     }
 
@@ -82,20 +86,28 @@ public class Player extends PhysicalObject {
     }
 
     public void rotateLeft() {
-        getBody().applyAngularImpulse(1600.0f, true);
+        getBody().applyAngularImpulse(ANGULAR_SPPED, true);
     }
+
     public void rotateRight() {
-        getBody().applyAngularImpulse(-1600.0f, true);
+        getBody().applyAngularImpulse(-ANGULAR_SPPED, true);
+    }
+
+    public void startMoving() {
+        moving = true;
+    }
+
+    public void stopMoving() {
+        moving = false;
     }
 
     public void attack() {
         calcDirection();
 
         Vector2 pos = new Vector2(getBody().getPosition());
-        Vector2 vel = new Vector2(direction);
+        Vector2 vel = new Vector2(direction).scl(0.0005f);
 
-        pos.add(new Vector2(direction).scl(15));
-        vel.scl(100);
+        pos.add(new Vector2(direction).scl(1.9f));
 
         projectiles.fire(pos, vel);
     }
@@ -115,5 +127,28 @@ public class Player extends PhysicalObject {
                 System.out.println(name + " is dead");
             }
         }
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public void update(long delta) {
+        animationTime += delta;
+
+        if (animationTime >= 1000) {
+            animationTime = animationTime % 1000;
+        }
+    }
+
+    public void draw(SpriteBatch batch) {
+        final Vector2 centerPos = getBody().getWorldCenter();
+
+        batch.draw(moving ?
+                        animation.getKeyFrame(animationTime / 1000.f, true) :
+                        animation.getKeyFrames()[0],
+                centerPos.x - 0.3f, centerPos.y - 0.6f,
+                0.35f, 0.6f, 0.6f, 1.2f, 3, 3,
+                getBody().getAngle() * 180.0f / (float) Math.PI + 180.f);
     }
 }

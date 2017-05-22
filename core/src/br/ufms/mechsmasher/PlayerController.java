@@ -2,11 +2,15 @@ package br.ufms.mechsmasher;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PlayerController implements Controller {
     private enum ButtonAction {
         UP, LEFT, DOWN, RIGHT, ATTACK
     }
+
+    private final Set<ButtonStatus> moveActions;
 
     private class ButtonStatus {
         public boolean pressed;
@@ -14,6 +18,22 @@ public class PlayerController implements Controller {
 
         public ButtonStatus(ButtonAction action) {
             this.action = action;
+        }
+
+        @Override
+        public int hashCode() {
+            return action.hashCode() * 47;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ButtonStatus)) {
+                return false;
+            }
+
+            ButtonStatus status = (ButtonStatus) obj;
+
+            return this.action == status.action;
         }
     }
 
@@ -37,12 +57,22 @@ public class PlayerController implements Controller {
         this.buttons.put(attack, this.statuses[4]);
 
         this.player = player;
+
+        this.moveActions = new HashSet<>();
+        this.moveActions.add(this.statuses[0]);
+        this.moveActions.add(this.statuses[1]);
+        this.moveActions.add(this.statuses[2]);
+        this.moveActions.add(this.statuses[3]);
     }
 
     @Override
     public void press(int key) {
         ButtonStatus status = buttons.getOrDefault(key, null);
         if (status != null) {
+            if (moveActions.contains(status)) {
+                player.startMoving();
+            }
+
             status.pressed = true;
         }
     }
@@ -53,6 +83,10 @@ public class PlayerController implements Controller {
 
         if (status != null) {
             status.pressed = false;
+
+            if (moveActions.contains(status) && moveActions.stream().allMatch((s) -> !s.pressed)) {
+                player.stopMoving();
+            }
 
             if (status.action == ButtonAction.ATTACK) {
                 this.player.attack();
