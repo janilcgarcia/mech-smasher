@@ -1,10 +1,15 @@
 package br.ufms.mechsmasher;
 
 import br.ufms.mechsmasher.physics.PhysicalObject;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class Projectile extends PhysicalObject {
-    ProjectileManager manager;
+    private ProjectileManager manager;
+
+    public static final float WIDTH = 0.3f;
+    public static final float HEIGHT = 0.9f;
 
     public Projectile(ProjectileManager manager) {
         this.manager = manager;
@@ -21,11 +26,11 @@ public class Projectile extends PhysicalObject {
         bodyDef.bullet = true;
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(0.03f, 0.1f);
+        shape.setAsBox(WIDTH, HEIGHT);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 3f;
+        fixtureDef.density = 3.0f;
         fixtureDef.friction = 0.0f;
         fixtureDef.restitution = 0.0f;
 
@@ -45,5 +50,16 @@ public class Projectile extends PhysicalObject {
     @Override
     public void dispose() {
         super.dispose();
+
+        manager.removeProjectile(this);
+    }
+
+    public void draw(Batch batch, Texture bulletTexture) {
+        batch.draw(bulletTexture, getBody().getPosition().x - WIDTH / 2,
+                getBody().getPosition().y - HEIGHT / 2, WIDTH / 2, HEIGHT / 2,
+                WIDTH, HEIGHT, 1, 1,
+                getBody().getAngle() * 180.0f / (float) Math.PI, 0, 0,
+                bulletTexture.getWidth(), bulletTexture.getHeight(),
+                false, false);
     }
 }

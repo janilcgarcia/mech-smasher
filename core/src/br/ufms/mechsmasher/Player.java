@@ -5,7 +5,6 @@ import br.ufms.mechsmasher.physics.WorldController;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
@@ -16,7 +15,7 @@ public class Player extends PhysicalObject {
     private Vector2 direction;
 
     private Animation<TextureRegion> animation;
-    long animationTime;
+    private long animationTime;
     private int hp;
 
     private static final float LINEAR_SPEED = 0.3f;
@@ -105,9 +104,9 @@ public class Player extends PhysicalObject {
         calcDirection();
 
         Vector2 pos = new Vector2(getBody().getPosition());
-        Vector2 vel = new Vector2(direction).scl(0.0005f);
+        Vector2 vel = new Vector2(direction).scl(0.1f);
 
-        pos.add(new Vector2(direction).scl(1.9f));
+        pos.add(new Vector2(direction).scl(2.5f * Projectile.HEIGHT));
 
         projectiles.fire(pos, vel);
     }
@@ -150,5 +149,9 @@ public class Player extends PhysicalObject {
                 centerPos.x - 0.3f, centerPos.y - 0.6f,
                 0.35f, 0.6f, 0.6f, 1.2f, 3, 3,
                 getBody().getAngle() * 180.0f / (float) Math.PI + 180.f);
+    }
+
+    public ProjectileManager getProjectiles() {
+        return projectiles;
     }
 }

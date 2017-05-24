@@ -4,6 +4,7 @@ import br.ufms.mechsmasher.physics.WorldController;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,17 +12,17 @@ public class ProjectileManager {
     private World world;
     private WorldController worldController;
     private long lastShot;
-    private Set<Projectile> firedBullets;
+    private ArrayList<Projectile> firedBullets;
 
     public ProjectileManager() {
         this.worldController = null;
         this.lastShot = 0L;
-        this.firedBullets = new HashSet<>();
+        this.firedBullets = new ArrayList<>();
     }
 
     public Projectile fire(Vector2 from, Vector2 dir) {
         final long now = System.currentTimeMillis();
-        if (now - lastShot < 150) {
+        if (now - lastShot < 250) {
             return null;
         }
 
@@ -35,6 +36,14 @@ public class ProjectileManager {
         this.firedBullets.add(projectile);
 
         return projectile;
+    }
+
+    public void removeProjectile(Projectile projectile) {
+        this.firedBullets.remove(projectile);
+    }
+
+    public ArrayList<Projectile> getFiredBullets() {
+        return firedBullets;
     }
 
     public void setWorldController(WorldController worldController) {
