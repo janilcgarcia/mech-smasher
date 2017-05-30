@@ -5,8 +5,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.physics.box2d.*;
 
+/**
+ * Projetil atirado pelo jogador.
+ */
 public class Projectile extends PhysicalObject {
-    private ProjectileManager manager;
+    private final ProjectileManager manager;
 
     public static final float WIDTH = 0.3f;
     public static final float HEIGHT = 0.9f;
@@ -44,16 +47,10 @@ public class Projectile extends PhysicalObject {
 
     @Override
     public void contact(PhysicalObject object) {
-        getWorldController().deactivate(this, true);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-
+        getWorldController().deactivate(this, false);
         manager.removeProjectile(this);
     }
-
+    
     public void draw(Batch batch, Texture bulletTexture) {
         batch.draw(bulletTexture, getBody().getPosition().x - WIDTH / 2,
                 getBody().getPosition().y - HEIGHT / 2, WIDTH / 2, HEIGHT / 2,

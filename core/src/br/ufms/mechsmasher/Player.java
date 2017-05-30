@@ -8,25 +8,27 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
+/**
+ * Um jogador, pode se mover e atirar.
+ */
 public class Player extends PhysicalObject {
-    private String name;
-    private ProjectileManager projectiles;
+    private final Vector2 direction;
+    
+    private final ProjectileManager projectiles;
 
-    private Vector2 direction;
-
-    private Animation<TextureRegion> animation;
+    private final Animation<TextureRegion> animation;
     private long animationTime;
     private int hp;
 
+    // Algumas constantes
     private static final float LINEAR_SPEED = 0.3f;
     private static final float ANGULAR_SPPED = 0.2f;
 
     private boolean moving;
 
-    public Player(String name, Animation<TextureRegion> animation) {
+    public Player(Animation<TextureRegion> animation) {
         direction = new Vector2();
         projectiles = new ProjectileManager();
-        this.name = name;
 
         this.hp = 650;
         this.animation = animation;
@@ -121,10 +123,6 @@ public class Player extends PhysicalObject {
     public void contact(PhysicalObject object) {
         if (object instanceof Projectile) {
             hp -= 10;
-            System.out.println(name + ", HP: " + hp);
-            if (hp <= 0) {
-                System.out.println(name + " is dead");
-            }
         }
     }
 

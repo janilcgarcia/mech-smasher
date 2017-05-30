@@ -2,7 +2,6 @@ package br.ufms.mechsmasher.scenes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -10,7 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Created by anarchean on 23/05/17.
+ * Cena do Menu inicial.
  */
 public class Menu extends GameScene {
     private Texture titulo;
@@ -25,10 +24,10 @@ public class Menu extends GameScene {
     private Sprite sairSprite;
 
     private class GameSceneInput extends InputAdapter {
-        private Vector3 touchPosition;
-        private Rectangle novoJogoRectangle;
-        private Rectangle tutorialRectangle;
-        private Rectangle sairRectangle;
+        private final Vector3 touchPosition;
+        private final Rectangle novoJogoRectangle;
+        private final Rectangle tutorialRectangle;
+        private final Rectangle sairRectangle;
 
         private GameSceneInput() {
             touchPosition = new Vector3();
@@ -47,7 +46,7 @@ public class Menu extends GameScene {
             }
 
             if (tutorialRectangle.contains(touchPosition.x, touchPosition.y)) {
-                // TODO: Abrir tutorial
+                getSceneManager().swapScene(new Tutorial());
             }
 
             if (sairRectangle.contains(touchPosition.x, touchPosition.y)) {
@@ -58,6 +57,7 @@ public class Menu extends GameScene {
         }
     }
 
+    @Override
     public void create() {
         titulo = new Texture("titulo.png");
         novoJogo = new Texture("novo-jogo.png");
@@ -78,7 +78,11 @@ public class Menu extends GameScene {
         Gdx.input.setInputProcessor(new GameSceneInput());
     }
 
-    private void halfScreen(Texture texture, Sprite sprite, final float height, final float y) {
+    /**
+     * Posiciona sprite no meio da tela, centralizado horizontalmente.
+     */
+    private void halfScreen(Texture texture, Sprite sprite,
+            final float height, final float y) {
         final float ratio = texture.getWidth() / texture.getHeight();
         final float width = height * ratio;
         sprite.setSize(width, height);

@@ -5,13 +5,28 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Controles do jogador, todo controle é baseado no conjunto de teclas
+ * passados como argumento no construtor.
+ */
 public class PlayerController implements Controller {
+    /**
+     * Qual ação o botão executa
+     */
     private enum ButtonAction {
         UP, LEFT, DOWN, RIGHT, ATTACK
     }
 
+    /**
+     * Conjunto com todos as possíveis ações de movimento do usário e seu
+     * estado atual.
+     */
     private final Set<ButtonStatus> moveActions;
 
+    /**
+     * Usado na assossiação entre teclas e ações, para controlar o estado
+     * atual de alguma tecla
+     */
     private class ButtonStatus {
         public boolean pressed;
         public ButtonAction action;
@@ -41,7 +56,8 @@ public class PlayerController implements Controller {
     private ButtonStatus[] statuses;
     private Player player;
 
-    public PlayerController(int up, int right, int down, int left, int attack, Player player) {
+    public PlayerController(int up, int right, int down, int left, int attack,
+            Player player) {
         this.statuses = new ButtonStatus[5];
         this.statuses[0] = new ButtonStatus(ButtonAction.UP);
         this.statuses[1] = new ButtonStatus(ButtonAction.RIGHT);
@@ -115,6 +131,7 @@ public class PlayerController implements Controller {
     }
 
     public void act() {
-        Arrays.stream(statuses).filter(e -> e.pressed).forEach(e -> executeAction(e.action));
+        Arrays.stream(statuses).filter(e -> e.pressed).
+                forEach(e -> executeAction(e.action));
     }
 }
